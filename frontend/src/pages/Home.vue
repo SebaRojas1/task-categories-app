@@ -1,10 +1,24 @@
 <template>
-    <div class="p-6">
-      <h1 class="text-2xl font-bold mb-4">Categorías de Tareas</h1>
-      <CategoryForm />
+    <div class="p-4">
+      <CategoryForm @category-added="fetchCategories" />
+      <CategoryList :categories="categories" />
     </div>
   </template>
   
   <script setup>
+  import { ref } from 'vue'
+  import axiosClient from '@/lib/helpers/axiosClient'
   import CategoryForm from '@/components/CategoryForm.vue'
+  import CategoryList from '@/components/CategoryList.vue'
+
+  const categories = ref([])
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axiosClient.get('/categories')
+      categories.value = response.data
+    } catch (error) {
+      console.error('Error al obtener categorías:', error)
+    }
+  }
   </script>

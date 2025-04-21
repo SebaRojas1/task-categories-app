@@ -22,12 +22,15 @@
   
   const name = ref('')
   
+  const emit = defineEmits(['category-added'])
+
   const handleSubmit = async () => {
     if (!name.value.trim()) return
   
     try {
       await axiosClient.post('/categories', { name: name.value })
       name.value = ''
+      emit('category-added')
       alert('Categoría agregada correctamente')
     } catch (error) {
       console.error(error)
