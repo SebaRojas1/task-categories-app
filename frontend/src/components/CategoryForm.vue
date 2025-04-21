@@ -28,7 +28,7 @@
     try {
       await axiosClient.post('/categories', { name: name.value })
       name.value = ''
-      alert('Categoría agregada correctamente') // más adelante usamos toast o algo más pro
+      alert('Categoría agregada correctamente')
     } catch (error) {
       console.error(error)
       alert('Error al agregar categoría')
