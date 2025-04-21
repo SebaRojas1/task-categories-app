@@ -22,6 +22,21 @@ router.get('/categories/:id', async (req, res) => {
   }
 })
 
+router.post('/categories', async (req, res) => {
+  try {
+    const { name } = req.body
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'El nombre es requerido' })
+    }
+
+    const newCategory = new Category({ name })
+    const savedCategory = await newCategory.save()
+    res.status(201).json(savedCategory)
+  } catch (error) {
+    res.status(500).json({ message: 'Error al crear la categoría' })
+  }
+})
+
 router.put('/categories/:id', async (req, res) => {
   try {
     const category = await Category.findByIdAndUpdate(

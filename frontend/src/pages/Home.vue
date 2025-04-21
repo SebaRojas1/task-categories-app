@@ -6,7 +6,7 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import axiosClient from '@/lib/helpers/axiosClient'
   import CategoryForm from '@/components/CategoryForm.vue'
   import CategoryList from '@/components/CategoryList.vue'
@@ -21,4 +21,6 @@
       console.error('Error al obtener categorías:', error)
     }
   }
+  
+  onMounted(fetchCategories)
   </script>
