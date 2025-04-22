@@ -33,9 +33,9 @@ const handleSubmit = async () => {
   if (!name.value.trim()) return
 
   try {
-    await axiosClient.post('/categories', { name: name.value })
+    const response = await axiosClient.post('/categories', { name: name.value })
     name.value = ''
-    emit('category-added')
+    emit('category-added', response.data)
     alert('Categoría agregada correctamente')
   } catch (error) {
     console.error(error)
