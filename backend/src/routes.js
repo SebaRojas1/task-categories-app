@@ -57,13 +57,15 @@ router.delete('/categories/:id', async (req, res) => {
   try {
     const category = await Category.findByIdAndDelete(req.params.id)
     if (!category) return res.status(404).json({ message: 'Categoría no encontrada' })
+    
+    // También eliminar todas las tareas asociadas a esta categoría
+    await Task.deleteMany({ category: req.params.id })
+    
     res.json({ message: 'Categoría eliminada correctamente' })
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar la categoría' })
   }
 })
-
-export default router
 
 //////// tasks ///////////
 router.post('/categories/:categoryId/tasks', async (req, res) => {
@@ -76,8 +78,18 @@ router.post('/categories/:categoryId/tasks', async (req, res) => {
     const category = await Category.findById(req.params.categoryId)
     if (!category) return res.status(404).json({ message: 'Categoría no encontrada' })
 
-    const task = await Task.create({ name, category: category._id })
-    res.status(201).json(task)
+    const task = new Task({ 
+      name, 
+      category: category._id 
+    })
+    
+    const savedTask = await task.save()
+    
+    // Actualizar la categoría para incluir esta tarea
+    category.tasks.push(savedTask._id)
+    await category.save()
+    
+    res.status(201).json(savedTask)
   } catch (error) {
     res.status(500).json({ message: 'Error al crear la tarea' })
   }
@@ -94,14 +106,18 @@ router.get('/categories/:categoryId/tasks', async (req, res) => {
 
 router.put('/tasks/:taskId', async (req, res) => {
   try {
-    const { name, completed } = req.body
-    const task = await Task.findById(req.params.taskId)
+    const updates = {}
+    if (req.body.name !== undefined) updates.name = req.body.name
+    if (req.body.completed !== undefined) updates.completed = req.body.completed
+    
+    const task = await Task.findByIdAndUpdate(
+      req.params.taskId,
+      updates,
+      { new: true }
+    )
+    
     if (!task) return res.status(404).json({ message: 'Tarea no encontrada' })
-
-    if (name !== undefined) task.name = name
-    if (completed !== undefined) task.completed = completed
-
-    await task.save()
+    
     res.json(task)
   } catch (error) {
     res.status(500).json({ message: 'Error al actualizar la tarea' })
@@ -113,7 +129,15 @@ router.delete('/tasks/:taskId', async (req, res) => {
     const task = await Task.findById(req.params.taskId)
     if (!task) return res.status(404).json({ message: 'Tarea no encontrada' })
 
-    await task.remove()
+    // Eliminar la tarea
+    await Task.findByIdAndDelete(req.params.taskId)
+    
+    // Actualizar la categoría para eliminar la referencia a esta tarea
+    await Category.findByIdAndUpdate(
+      task.category,
+      { $pull: { tasks: task._id } }
+    )
+    
     res.json({ message: 'Tarea eliminada correctamente' })
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar la tarea' })
@@ -122,14 +146,18 @@ router.delete('/tasks/:taskId', async (req, res) => {
 
 router.patch('/tasks/:taskId/complete', async (req, res) => {
   try {
-    const task = await Task.findById(req.params.taskId)
+    const task = await Task.findByIdAndUpdate(
+      req.params.taskId,
+      { completed: true },
+      { new: true }
+    )
+    
     if (!task) return res.status(404).json({ message: 'Tarea no encontrada' })
-
-    task.completed = true
-    await task.save()
 
     res.json({ message: 'Tarea marcada como completada', task })
   } catch (error) {
     res.status(500).json({ message: 'Error al marcar la tarea como completada' })
   }
 })
+
+export default router

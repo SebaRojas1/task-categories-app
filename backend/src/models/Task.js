@@ -11,10 +11,14 @@ const taskSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: true
+    }
   },
   { timestamps: true }
 )
 
 const Task = mongoose.model('Task', taskSchema)
-
 export default Task
