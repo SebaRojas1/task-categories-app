@@ -7,6 +7,12 @@ const categorySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    tasks: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Task',
+      },
+    ],
   },
   { timestamps: true }
 )
